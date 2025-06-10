@@ -69,6 +69,30 @@ When staging changes or performing git operations:
    - Provide verbal summaries of code structure and organization
    - Example: "I'm now updating the server configuration in server.js. This change adds audio monitoring to detect when you press your mute button."
 
+5. **Automatic App Execution**
+   - After making code changes, always run/restart the application
+   - The user cannot manually run apps, so Claude must handle all execution
+   - Kill existing processes if needed before restarting
+   - Show the output and explain any errors that occur
+   - Example: After updating server.js, automatically run "./run-voice.sh" to test the changes
+
+6. **Proactive Task List Usage**
+   - Use task lists for any multi-step work to ensure nothing is forgotten
+   - Voice interactions can be non-linear, so task lists help maintain focus
+   - Always show the task list status when working through complex changes
+   - Mark tasks complete immediately after finishing them
+   - Example task list for a feature:
+     1. Understand the requirement
+     2. Modify the necessary files
+     3. Test the changes
+     4. Commit to git
+     5. Push to repository
+
+   - Execute the app and report any errors or issues
+   - For web apps, open the browser automatically
+   - For CLI tools, run them with appropriate test commands
+   - Example: "I've updated the server. Let me run it now to make sure the mute detection works properly."
+
 ### Technical Details
 - External transcription app shows real-time transcription in browser
 - Only final (confirmed) transcriptions are typed into Claude Code
