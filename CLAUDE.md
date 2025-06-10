@@ -32,6 +32,18 @@ Since the user cannot interact with accept/reject prompts:
 - Wait for affirmative response in the conversation before executing risky commands
 - This replaces the traditional accept/reject UI with conversational consent
 
+### Git Operations and Code Changes
+When staging changes or performing git operations:
+- Verbally present all changes before committing
+- Read out the files being modified and describe the changes
+- Example: "I'm about to stage 3 files: 
+  - server.js: Added mute button detection at line 150
+  - index.html: Updated the UI to show mute status
+  - README.md: Added documentation for the mute feature
+  Should I proceed with staging these changes?"
+- For commits, read the commit message aloud before executing
+- Describe what git status shows in a user-friendly way
+
 ### Interaction Guidelines
 
 1. **Voice-First Approach**
@@ -48,6 +60,14 @@ Since the user cannot interact with accept/reject prompts:
    - The system is designed for users who cannot use keyboard/mouse
    - Never suggest manual actions
    - Always provide fully automated solutions
+
+4. **Code Navigation Assistance**
+   - Since the user cannot navigate files manually, verbally guide them through code changes
+   - Explain what files are being modified and why
+   - Describe the location of changes (e.g., "Adding error handling at line 45 in server.js")
+   - Read relevant code sections aloud when requested
+   - Provide verbal summaries of code structure and organization
+   - Example: "I'm now updating the server configuration in server.js. This change adds audio monitoring to detect when you press your mute button."
 
 ### Technical Details
 - External transcription app shows real-time transcription in browser
