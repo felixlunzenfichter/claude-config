@@ -75,6 +75,17 @@ When staging changes or performing git operations:
    - Kill existing processes if needed before restarting
    - Show the output and explain any errors that occur
    - Example: After updating server.js, automatically run "./run-voice.sh" to test the changes
+   
+   **For iOS/macOS Xcode Projects:**
+   - Always run the app through Xcode after making changes
+   - Use the script: `/Users/felixlunzenfichter/Scripts/run-xcode-app.sh`
+   - This script will:
+     1. Open the Xcode project
+     2. Press Cmd+R to build and run
+     3. Return focus to Terminal
+   - Usage: `/Users/felixlunzenfichter/Scripts/run-xcode-app.sh [project-path]` or just `/Users/felixlunzenfichter/Scripts/run-xcode-app.sh` in project directory
+   - The script works with both .xcodeproj and .xcworkspace files
+   - This ensures the user can see the app running without manual interaction
 
 6. **Proactive Task List Usage**
    - Use task lists for any multi-step work to ensure nothing is forgotten
@@ -100,6 +111,22 @@ When staging changes or performing git operations:
 - 1 second delay before Enter allows for natural speech patterns
 - Uses AppleScript to simulate keyboard input
 
+### System Messages in Terminal
+The transcription system includes monitoring that types status messages into the terminal:
+- `[INFO]` messages: Normal status updates (server started, stopped)
+- `[WATCHDOG]` messages: From the external monitor checking server health
+- `[WARNING]` messages: Issues like disconnected browser
+- `[ERROR]` messages: Server crashes or errors
+
+These are NOT user commands - they're system notifications to keep you informed about the transcription service status. Examples:
+- `[WATCHDOG] Watchdog started - monitoring transcription server`
+- `[WATCHDOG] Server not running. Starting...`
+- `[WATCHDOG] SERVER CRASHED! Attempt #1 to restart...`
+- `[INFO] Transcription server started on port 3000`
+- `[WARNING] No browser connected to transcription server`
+
+When you see these messages, they indicate the health of the voice transcription system, not user input.
+
 ### Examples of Appropriate Interactions
 - ✅ User speaks: "Create a new Python file" → Transcription app types it → Claude creates file
 - ✅ User speaks: "Run the tests" → Transcription app types it → Claude executes tests
@@ -119,3 +146,31 @@ Every interaction must be:
 - Completed without any manual intervention
 
 The combination of the external voice transcription system and Claude Code with skipped permissions creates a powerful accessibility tool for users with physical limitations.
+
+## CRITICAL SAFETY GUIDELINES
+
+### Root Directory Operations
+- **WARNING**: You are currently working in the root directory (/Users/felixlunzenfichter)
+- Be EXTREMELY careful with any file operations that could affect system files
+- ALWAYS ask for explicit verbal confirmation before:
+  - Deleting any files or directories
+  - Moving or renaming files
+  - Running commands with sudo
+  - Executing rm -rf or any recursive deletion
+  - Modifying system configuration files
+  - Installing or uninstalling software
+- Example: "This command will delete files in your home directory. Should I proceed?"
+- Wait for clear verbal confirmation like "yes, proceed" before executing
+
+### Automatic Git Operations
+- When working in a git repository, ALWAYS push changes immediately after every modification
+- After any file edit, addition, or deletion:
+  1. Stage the changes with git add
+  2. Commit with a descriptive message
+  3. Push to the remote repository
+- This ensures no work is lost and provides immediate backup
+- Example workflow:
+  - Edit file → git add → git commit → git push
+  - All in one continuous operation without waiting
+- This is especially important given the voice-only interface where manual git operations are difficult
+
