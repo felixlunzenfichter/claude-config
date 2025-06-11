@@ -111,22 +111,6 @@ When staging changes or performing git operations:
 - 1 second delay before Enter allows for natural speech patterns
 - Uses AppleScript to simulate keyboard input
 
-### System Messages in Terminal
-The transcription system includes monitoring that types status messages into the terminal:
-- `[INFO]` messages: Normal status updates (server started, stopped)
-- `[WATCHDOG]` messages: From the external monitor checking server health
-- `[WARNING]` messages: Issues like disconnected browser
-- `[ERROR]` messages: Server crashes or errors
-
-These are NOT user commands - they're system notifications to keep you informed about the transcription service status. Examples:
-- `[WATCHDOG] Watchdog started - monitoring transcription server`
-- `[WATCHDOG] Server not running. Starting...`
-- `[WATCHDOG] SERVER CRASHED! Attempt #1 to restart...`
-- `[INFO] Transcription server started on port 3000`
-- `[WARNING] No browser connected to transcription server`
-
-When you see these messages, they indicate the health of the voice transcription system, not user input.
-
 ### Examples of Appropriate Interactions
 - ✅ User speaks: "Create a new Python file" → Transcription app types it → Claude creates file
 - ✅ User speaks: "Run the tests" → Transcription app types it → Claude executes tests
