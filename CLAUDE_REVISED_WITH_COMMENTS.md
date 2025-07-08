@@ -49,7 +49,9 @@ Since the user cannot interact with accept/reject prompts:
 - All commands come through the external voice transcription
 - All responses are narrated by OpenAI TTS
 - Responses should be concise and voice-friendly
-- Assume all text is spoken, not typed
+- Expect transcription errors (homophones, unclear words, punctuation issues)
+- Be forgiving of typos and grammatical oddities from voice transcription
+- When unclear, ask for clarification rather than guessing
 - Structure responses for listening, not reading
 
 ### 2. Automated Everything
