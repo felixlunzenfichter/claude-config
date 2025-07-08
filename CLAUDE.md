@@ -17,12 +17,16 @@ The user interacts with Claude Code through an external voice transcription appl
 - The transcription app types directly into whatever text field has focus (usually Claude Code terminal)
 - Claude Code runs with `--dangerously-skip-permissions` for seamless command execution
 
-### Important Configuration
-- The external transcription system is always active during Claude Code sessions
-- Voice commands appear as regular text input in Claude Code
-- Claude Code runs with `--dangerously-skip-permissions` flag
-- All commands are automatically executed without manual approval prompts
-- This enables fully accessible computing for users with mobility limitations
+### Output Narration System
+- All Claude responses are narrated using OpenAI TTS (Text-to-Speech)
+- The narrator reads the entire response aloud with a British accent
+- This affects response formatting:
+  - Avoid ASCII art or visual diagrams (won't translate well to speech)
+  - Use clear punctuation for natural speech flow
+  - Spell out symbols when important (e.g., "dollar sign" instead of just "$")
+  - Keep file paths and commands clear and unambiguous
+  - Avoid long lists of similar items (hard to follow when narrated)
+- The user is often looking away from the screen while listening to responses
 
 ### Permission Handling in Skip Mode
 Since the user cannot interact with accept/reject prompts:
@@ -32,189 +36,78 @@ Since the user cannot interact with accept/reject prompts:
 - Wait for affirmative response in the conversation before executing risky commands
 - This replaces the traditional accept/reject UI with conversational consent
 
-### Git Operations and Code Changes
-When staging changes or performing git operations:
-- Verbally present all changes before committing
-- Read out the files being modified and describe the changes
-- Example: "I'm about to stage 3 files: 
-  - server.js: Added mute button detection at line 150
-  - index.html: Updated the UI to show mute status
-  - README.md: Added documentation for the mute feature
-  Should I proceed with staging these changes?"
-- For commits, read the commit message aloud before executing
-- Describe what git status shows in a user-friendly way
+## Interaction Guidelines
 
-### Interaction Guidelines
+### 1. Voice-First Approach
+- All commands come through the external voice transcription
+- All responses are narrated by OpenAI TTS
+- **ALWAYS start responses by stating what you understood**: "I'll [corrected/interpreted command]:"
+  - Example: User says "create a python file" → Start with: "I'll create a Python file:"
+  - Example: Garbled input "creek ate pie thon fail" → Start with: "I'll create a Python file:"
+  - This lets the user hear what you understood before you act
+  - User can interrupt if the interpretation is wrong
+- Expect transcription errors (homophones, unclear words, punctuation issues)
+- Be forgiving of typos and grammatical oddities from voice transcription
+- Structure responses for listening, not reading
 
-1. **Voice-First Approach**
-   - All commands come through the external voice transcription
-   - Responses should be concise and voice-friendly
-   - Assume all text is spoken, not typed
+### 2. Automated Everything
+- Every action must be performed through Claude's tools
+- No manual steps or UI interactions
+- Complete all tasks programmatically
 
-2. **Automated Everything**
-   - Every action must be performed through Claude's tools
-   - No manual steps or UI interactions
-   - Complete all tasks programmatically
+### 3. Accessibility Focus
+- The system is designed for users who cannot use keyboard/mouse
+- Never suggest manual actions
+- Always provide fully automated solutions
 
-3. **Accessibility Focus**
-   - The system is designed for users who cannot use keyboard/mouse
-   - Never suggest manual actions
-   - Always provide fully automated solutions
+### 4. Code Navigation Assistance
+- Since the user cannot navigate files manually, verbally guide them through code changes
+- Explain what files are being modified and why
+- Describe the location of changes (e.g., "Adding error handling at line 45 in server.js")
+- Read relevant code sections aloud when requested
+- Provide verbal summaries of code structure and organization
 
-4. **Code Navigation Assistance**
-   - Since the user cannot navigate files manually, verbally guide them through code changes
-   - Explain what files are being modified and why
-   - Describe the location of changes (e.g., "Adding error handling at line 45 in server.js")
-   - Read relevant code sections aloud when requested
-   - Provide verbal summaries of code structure and organization
-   - Example: "I'm now updating the server configuration in server.js. This change adds audio monitoring to detect when you press your mute button."
+### 5. Proactive Task List Usage
+- Use task lists for any multi-step work to ensure nothing is forgotten
+- Voice interactions can be non-linear, so task lists help maintain focus
+- Always show the task list status when working through complex changes
+- Mark tasks complete immediately after finishing them
 
-5. **Automatic App Execution and Monitoring**
-   - After making code changes, always run/restart the application
-   - The user cannot manually run apps, so Claude must handle all execution
-   - Kill existing processes if needed before restarting
-   
-   **CRITICAL: ALWAYS USE TMUX - NEVER USE BASH DIRECTLY**
-   Since this is a fully accessible system, you MUST use tmux for ALL command execution:
-   - Create a default tmux session called "main" for general commands: `tmux new-session -d -s main`
-   - For ANY long-running process (servers, monitors, etc.), create a dedicated tmux session
-   - NEVER use `bash` tool directly for running processes
-   - NEVER use `&` to background processes
-   - ALWAYS use tmux to ensure persistent sessions that survive disconnections
-   
-   Example workflow:
-   - Quick commands: `tmux send-keys -t main "ls -la" Enter`
-   - Start a server: `tmux new-session -d -s server "node server.js"`
-   - Check output: `tmux capture-pane -t server -p`
-   - Attach for user: `tmux attach -t server`
-   
-   This ensures the user can always reconnect to running processes, which is critical for accessibility.
-   
-   **CRITICAL: Monitor ALL Execution Stages**
-   - Don't just start a process - verify it's actually running properly
-   - For any app/server startup:
-     1. Start the process
-     2. Wait for startup messages
-     3. Check for error messages
-     4. Verify expected behavior (ports listening, connections established, etc.)
-     5. Test basic functionality
-   
-   **For Node.js servers:**
-   - Must see "Server started" or similar message
-   - Check for "Connected to backend" or database connections
-   - Verify WebSocket connections are established
-   - Monitor for at least 10 seconds to catch startup errors
-   
-   **Common patterns to watch for:**
-   - "EADDRINUSE" - Port already in use
-   - "Cannot find module" - Missing dependencies
-   - "Connection refused" - Backend not accessible
-   - Silent failures - Process starts but immediately exits
-   
-   - Always run with visible output - never background processes
-   - Example: After updating server.js, run it and WAIT to see "Connected to transcription backend"
-   
-   **For iOS/macOS Xcode Projects:**
-   - ALWAYS run apps via command line, NOT through Xcode UI
-   - Connected iPhone ID: 00008101-000359212650001E
-   - Use the script: `/Users/felixlunzenfichter/Documents/ClaudeCodeVoiceControl/run-on-iphone.sh`
-   - This script will:
-     1. Detect the connected iPhone
-     2. Build the project using xcodebuild
-     3. Install and launch on the iPhone
-     4. Show build output and any errors
-   - Usage from project directory: `./run-on-iphone.sh`
-   
-   **CRITICAL: Always Monitor Build Output**
-   - The script output MUST show these key messages in order:
-     1. "Building for iPhone..." - Build started
-     2. "** BUILD SUCCEEDED **" - Build completed successfully
-     3. "Installing and running on iPhone..." - Installation starting
-     4. "App installed:" with bundleID - Installation successful
-     5. "Launched application" - App is running
-   - If ANY of these messages are missing, the app is NOT running
-   - Common issues to check:
-     - Build errors: Look for red error messages in output
-     - Missing provisioning profiles
-     - Device not trusted
-     - App crash on launch
-   
-   **Log Files to Monitor:**
-   - Build logs: Check for compilation errors
-   - Console output: Run `xcrun devicectl device process list` to verify app is running
-   - Server logs: Check `/tmp/claude_conversation.log` for transcription activity
-   - Always read through ALL output before confirming success
-   
-   **RUNTIME LOG MONITORING:**
-   - ALL applications MUST write runtime logs to files
-   - Monitor these logs CONTINUOUSLY during execution:
-     - Server logs: `/tmp/server_debug.log` or similar
-     - iOS app logs: Use `xcrun devicectl device log` to capture device logs
-     - WebSocket connection logs
-     - Error logs
-   - Every Node.js server MUST include:
-     ```javascript
-     const LOG_FILE = path.join(__dirname, 'runtime.log');
-     function log(message) {
-       const timestamp = new Date().toISOString();
-       const logEntry = `[${timestamp}] ${message}\n`;
-       console.log(logEntry.trim());
-       fs.appendFileSync(LOG_FILE, logEntry);
-     }
-     ```
-   - After starting ANY process:
-     1. tail -f the log file
-     2. Watch for successful startup messages
-     3. Monitor for errors
-     4. Verify expected connections are established
-     5. Confirm data is flowing (transcripts, responses, etc.)
-   - NEVER assume an app is working just because the process started
-   - Always verify through runtime logs that:
-     - Connections are established
-     - Data is being received
-     - Responses are being sent
-     - No errors are occurring
-   
-   - Alternative direct command:
-     ```bash
-     xcodebuild -project ClaudeCodeVoiceControl.xcodeproj \
-       -scheme ClaudeCodeVoiceControl \
-       -destination 'id=00008101-000359212650001E' \
-       -configuration Debug \
-       clean build
-     ```
-   - This provides full visibility into the build process and errors
-   - The user can see all output without manual Xcode interaction
+## Command Execution and Process Management
 
-6. **Proactive Task List Usage**
-   - Use task lists for any multi-step work to ensure nothing is forgotten
-   - Voice interactions can be non-linear, so task lists help maintain focus
-   - Always show the task list status when working through complex changes
-   - Mark tasks complete immediately after finishing them
-   - Example task list for a feature:
-     1. Understand the requirement
-     2. Modify the necessary files
-     3. Test the changes
-     4. Commit to git
-     5. Push to repository
+### CRITICAL: ALWAYS USE TMUX - NEVER USE BASH DIRECTLY
+Since this is a fully accessible system, you MUST use tmux for ALL command execution:
 
-   - Execute the app and report any errors or issues
-   - For web apps, open the browser automatically
-   - For CLI tools, run them with appropriate test commands
-   - Example: "I've updated the server. Let me run it now to make sure the mute detection works properly."
+#### Quick Reference
+- Create main session: `tmux new-session -d -s main`
+- Quick commands: `tmux send-keys -t main "ls -la" Enter`
+- Start a server: `tmux new-session -d -s server "node server.js"`
+- Check output: `tmux capture-pane -t server -p`
+- List sessions: `tmux list-sessions`
+- Kill session: `tmux kill-session -t [name]`
+- Attach for user: `tmux attach -t server`
 
-### Technical Details
-- External transcription app shows real-time transcription in browser
-- Only final (confirmed) transcriptions are typed into Claude Code
-- Empty transcriptions are ignored
-- 1 second delay before Enter allows for natural speech patterns
-- Uses AppleScript to simulate keyboard input
+### Platform-Specific Guidelines
 
-### Examples of Appropriate Interactions
-- ✅ User speaks: "Create a new Python file" → Transcription app types it → Claude creates file
-- ✅ User speaks: "Run the tests" → Transcription app types it → Claude executes tests
-- ✅ User speaks: "Deploy to production" → Transcription app types it → Claude runs deployment
-- ✅ User speaks: "Show me the error" → Transcription app types it → Claude reads and explains
+#### iOS/macOS Xcode Projects
+- Connected iPhone ID: 00008101-000359212650001E
+- Use script: `/Users/felixlunzenfichter/Documents/ClaudeCodeVoiceControl/run-on-iphone.sh`
+- Alternative: `xcodebuild -project [project].xcodeproj -scheme [scheme] -destination 'id=00008101-000359212650001E' clean build`
+
+## Git Operations
+
+### Git Workflow for Voice Development
+When working with git:
+1. **Before any changes**: Verbally describe what will be modified
+2. **After changes**: Automatically stage, commit, and push
+3. **For commits**: Read the commit message aloud before executing
+
+### Automatic Git Operations
+After any file edit, addition, or deletion:
+1. Stage the changes with `git add`
+2. Commit with a descriptive message
+3. Push to the remote repository
+4. This ensures no work is lost and provides immediate backup
 
 ## Test-Driven Development (TDD) Approach
 
@@ -249,31 +142,8 @@ This project follows strict Test-Driven Development principles:
 - **Test Execution**: Use `xcodebuild test -project ClaudeCodeVoiceControl.xcodeproj -scheme ClaudeCodeVoiceControl -destination 'id=00008101-000359212650001E' -only-testing:ClaudeCodeVoiceControlTests`
 - **iPhone Device**: 00008101-000359212650001E
 - **Run Script**: `./run-on-iphone.sh` for app deployment
-- **Live Feedback**: Xcode provides real-time test indicators (✅/❌)
 
-### First Successful Test Milestone
-✅ **Microphone Permission Test** - Validates device audio access
-- Test: `testMicrophonePermission()` in ClaudeCodeVoiceControlTests
-- Status: PASSED ✅ - Microphone permission GRANTED
-- Execution: 0.007 seconds on device
-- Foundation for voice-controlled accessibility features
-
-## Critical Reminder
-This system enables fully accessible computing through voice alone. The user relies on:
-1. The external voice transcription app to convert speech to text
-2. Claude Code to execute all computer operations
-
-**The only interface to Claude Code is through voice transcription, and the only interface to the computer is through Claude Code.** We are building the first fully accessible computing system in the world - this is the first time true voice-only computer control has been possible.
-
-Every interaction must be:
-- Fully automated through Claude's tools
-- Accessible via voice commands only
-- Completed without any manual intervention
-- Follow TDD principles for sustainable development
-
-The combination of the external voice transcription system and Claude Code with skipped permissions creates a powerful accessibility tool for users with physical limitations.
-
-## CRITICAL SAFETY GUIDELINES
+## Safety Guidelines
 
 ### Root Directory Operations
 - **WARNING**: You are currently working in the root directory (/Users/felixlunzenfichter)
@@ -285,67 +155,24 @@ The combination of the external voice transcription system and Claude Code with 
   - Executing rm -rf or any recursive deletion
   - Modifying system configuration files
   - Installing or uninstalling software
-- Example: "This command will delete files in your home directory. Should I proceed?"
-- Wait for clear verbal confirmation like "yes, proceed" before executing
 
-### Automatic Git Operations
-- When working in a git repository, ALWAYS push changes immediately after every modification
-- After any file edit, addition, or deletion:
-  1. Stage the changes with git add
-  2. Commit with a descriptive message
-  3. Push to the remote repository
-- This ensures no work is lost and provides immediate backup
-- Example workflow:
-  - Edit file → git add → git commit → git push
-  - All in one continuous operation without waiting
-- This is especially important given the voice-only interface where manual git operations are difficult
+## Critical Reminder
 
-## Long-Running Processes with tmux
+This system enables fully accessible computing through voice alone. The user relies on:
+1. The external voice transcription app to convert speech to text
+2. Claude Code to execute all computer operations
 
-### Why tmux is Essential
-- Claude Code's Bash tool runs in non-interactive mode (no TTY)
-- Processes that need continuous operation must run in tmux sessions
-- This provides real terminal environments for servers, monitors, and interactive tools
+**The only interface to Claude Code is through voice transcription, and the only interface to the computer is through Claude Code.**
 
-### Required tmux Usage
-For ANY process that needs to run continuously (servers, narrators, monitors), ALWAYS use tmux:
+Every interaction must be:
+- Fully automated through Claude's tools
+- Accessible via voice commands only
+- Completed without any manual intervention
+- Use tmux for all command execution
+- Follow TDD principles for sustainable development
 
-1. **Create session**: `tmux new-session -d -s [name] "command"`
-   - Example: `tmux new-session -d -s narrator "cd /path && python app.py"`
-   
-2. **Check output**: `tmux capture-pane -t [name] -p`
-   - Use with `| tail -20` to see recent output
-   - Use with `| head -20` to see startup messages
-   
-3. **Send commands**: `tmux send-keys -t [name] "command" Enter`
-   - Useful for interacting with running processes
-   
-4. **List sessions**: `tmux list-sessions`
-   - Always check what's already running
-   
-5. **Kill session**: `tmux kill-session -t [name]`
-   - Clean up when done
-
-### Common Use Cases
-- **Python/Node.js servers**: Always run in tmux
-- **Monitoring tools**: Keep them running in background
-- **Interactive CLIs**: Maintain their state in tmux
-- **Voice narrators**: Run Gemini Live API tools in tmux
-
-### Example Workflow
-```bash
-# Check if session exists
-tmux list-sessions | grep narrator || echo "Not running"
-
-# Start narrator
-tmux new-session -d -s narrator "cd ~/project && python narrator.py"
-
-# Monitor output
-tmux capture-pane -t narrator -p | tail -20
-
-# Stop when done
-tmux kill-session -t narrator
-```
-
-This ensures all long-running processes remain accessible and manageable.
-
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
