@@ -52,6 +52,7 @@ Since the user cannot interact with accept/reject prompts:
 - Expect transcription errors (homophones, unclear words, punctuation issues)
 - Be forgiving of typos and grammatical oddities from voice transcription
 - When unclear, ask for clarification rather than guessing
+- If transcription seems completely wrong or nonsensical, ask: "I think the transcription might be incorrect. Could you repeat that?"
 - Structure responses for listening, not reading
 
 ### 2. Automated Everything
