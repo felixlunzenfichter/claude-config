@@ -92,8 +92,9 @@ Since this is a fully accessible system, you MUST use tmux for ALL command execu
 
 2. **OpenAI TTS Narrator** (`narrator` tmux session)
    - Location: `/Users/felixlunzenfichter/Documents/macos-voice-control`
-   - Command: `python openai-tts-narrator.py`
+   - Command: `source venv/bin/activate && python openai-tts-narrator.py`
    - Purpose: Narrates Claude responses aloud
+   - Requires: Virtual environment activation and OPENAI_API_KEY in .env file
 
 #### Server Management Protocol:
 - Always check if servers are running at session start
