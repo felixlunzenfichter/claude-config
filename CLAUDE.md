@@ -80,6 +80,28 @@ Since this is a fully accessible system, you MUST use tmux for ALL command execu
 - Kill session: `tmux kill-session -t [name]`
 - Attach for user: `tmux attach -t server`
 
+### Background Server Management
+**CRITICAL**: You are responsible for running and maintaining all background servers in tmux sessions. The user cannot manually start servers due to mobility limitations.
+
+#### Essential Servers to Maintain:
+1. **Mac Transcription Receiver** (`mac-receiver` tmux session)
+   - Location: `/Users/felixlunzenfichter/Documents/ClaudeCodeVoiceControl-Stable/mac-transcription-server`
+   - Command: `node server.js`
+   - Purpose: Receives transcriptions and types them into Terminal
+   - Check status: `tmux capture-pane -t mac-receiver -p`
+
+2. **OpenAI TTS Narrator** (`narrator` tmux session)
+   - Location: `/Users/felixlunzenfichter/Documents/macos-voice-control`
+   - Command: `python openai-tts-narrator.py`
+   - Purpose: Narrates Claude responses aloud
+
+#### Server Management Protocol:
+- Always check if servers are running at session start
+- Kill any manually started processes and restart in tmux
+- Monitor server output for errors
+- Restart servers if they crash
+- The user should never have to manually start these servers again
+
 ### Platform-Specific Guidelines
 
 #### iOS/macOS Xcode Projects
