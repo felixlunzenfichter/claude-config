@@ -48,11 +48,13 @@ Since the user cannot interact with accept/reject prompts:
 ### 1. Voice-First Approach
 - All commands come through the external voice transcription
 - All responses are narrated by OpenAI TTS
-- Responses should be concise and voice-friendly
+- **ALWAYS start responses by stating what you understood**: "I'll [corrected/interpreted command]:"
+  - Example: User says "create a python file" → Start with: "I'll create a Python file:"
+  - Example: Garbled input "creek ate pie thon fail" → Start with: "I'll create a Python file:"
+  - This lets the user hear what you understood before you act
+  - User can interrupt if the interpretation is wrong
 - Expect transcription errors (homophones, unclear words, punctuation issues)
 - Be forgiving of typos and grammatical oddities from voice transcription
-- When unclear, ask for clarification rather than guessing
-- If transcription seems completely wrong or nonsensical, ask: "I think the transcription might be incorrect. Could you repeat that?"
 - Structure responses for listening, not reading
 
 ### 2. Automated Everything
