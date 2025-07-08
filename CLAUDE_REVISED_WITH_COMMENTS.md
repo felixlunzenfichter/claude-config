@@ -17,6 +17,18 @@ The user interacts with Claude Code through an external voice transcription appl
 - The transcription app types directly into whatever text field has focus (usually Claude Code terminal)
 - Claude Code runs with `--dangerously-skip-permissions` for seamless command execution
 
+### Output Narration System
+<!-- NEW SECTION: Critical for understanding how responses should be formatted -->
+- All Claude responses are narrated using OpenAI TTS (Text-to-Speech)
+- The narrator reads the entire response aloud with a British accent
+- This affects response formatting:
+  - Avoid ASCII art or visual diagrams (won't translate well to speech)
+  - Use clear punctuation for natural speech flow
+  - Spell out symbols when important (e.g., "dollar sign" instead of just "$")
+  - Keep file paths and commands clear and unambiguous
+  - Avoid long lists of similar items (hard to follow when narrated)
+- The user is often looking away from the screen while listening to responses
+
 <!-- REMOVED: "Important Configuration" section - this info was redundant with "User Context" and the skip-permissions info is already mentioned above -->
 
 ### Permission Handling in Skip Mode
@@ -35,8 +47,10 @@ Since the user cannot interact with accept/reject prompts:
 
 ### 1. Voice-First Approach
 - All commands come through the external voice transcription
+- All responses are narrated by OpenAI TTS
 - Responses should be concise and voice-friendly
 - Assume all text is spoken, not typed
+- Structure responses for listening, not reading
 
 ### 2. Automated Everything
 - Every action must be performed through Claude's tools
