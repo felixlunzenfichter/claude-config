@@ -69,23 +69,122 @@ When staging changes or performing git operations:
    - Provide verbal summaries of code structure and organization
    - Example: "I'm now updating the server configuration in server.js. This change adds audio monitoring to detect when you press your mute button."
 
-5. **Automatic App Execution**
+5. **Automatic App Execution and Monitoring**
    - After making code changes, always run/restart the application
    - The user cannot manually run apps, so Claude must handle all execution
    - Kill existing processes if needed before restarting
-   - Show the output and explain any errors that occur
-   - Example: After updating server.js, automatically run "./run-voice.sh" to test the changes
+   
+   **CRITICAL: ALWAYS USE TMUX - NEVER USE BASH DIRECTLY**
+   Since this is a fully accessible system, you MUST use tmux for ALL command execution:
+   - Create a default tmux session called "main" for general commands: `tmux new-session -d -s main`
+   - For ANY long-running process (servers, monitors, etc.), create a dedicated tmux session
+   - NEVER use `bash` tool directly for running processes
+   - NEVER use `&` to background processes
+   - ALWAYS use tmux to ensure persistent sessions that survive disconnections
+   
+   Example workflow:
+   - Quick commands: `tmux send-keys -t main "ls -la" Enter`
+   - Start a server: `tmux new-session -d -s server "node server.js"`
+   - Check output: `tmux capture-pane -t server -p`
+   - Attach for user: `tmux attach -t server`
+   
+   This ensures the user can always reconnect to running processes, which is critical for accessibility.
+   
+   **CRITICAL: Monitor ALL Execution Stages**
+   - Don't just start a process - verify it's actually running properly
+   - For any app/server startup:
+     1. Start the process
+     2. Wait for startup messages
+     3. Check for error messages
+     4. Verify expected behavior (ports listening, connections established, etc.)
+     5. Test basic functionality
+   
+   **For Node.js servers:**
+   - Must see "Server started" or similar message
+   - Check for "Connected to backend" or database connections
+   - Verify WebSocket connections are established
+   - Monitor for at least 10 seconds to catch startup errors
+   
+   **Common patterns to watch for:**
+   - "EADDRINUSE" - Port already in use
+   - "Cannot find module" - Missing dependencies
+   - "Connection refused" - Backend not accessible
+   - Silent failures - Process starts but immediately exits
+   
+   - Always run with visible output - never background processes
+   - Example: After updating server.js, run it and WAIT to see "Connected to transcription backend"
    
    **For iOS/macOS Xcode Projects:**
-   - Always run the app through Xcode after making changes
-   - Use the script: `/Users/felixlunzenfichter/Scripts/run-xcode-app.sh`
+   - ALWAYS run apps via command line, NOT through Xcode UI
+   - Connected iPhone ID: 00008101-000359212650001E
+   - Use the script: `/Users/felixlunzenfichter/Documents/ClaudeCodeVoiceControl/run-on-iphone.sh`
    - This script will:
-     1. Open the Xcode project
-     2. Press Cmd+R to build and run
-     3. Return focus to Terminal
-   - Usage: `/Users/felixlunzenfichter/Scripts/run-xcode-app.sh [project-path]` or just `/Users/felixlunzenfichter/Scripts/run-xcode-app.sh` in project directory
-   - The script works with both .xcodeproj and .xcworkspace files
-   - This ensures the user can see the app running without manual interaction
+     1. Detect the connected iPhone
+     2. Build the project using xcodebuild
+     3. Install and launch on the iPhone
+     4. Show build output and any errors
+   - Usage from project directory: `./run-on-iphone.sh`
+   
+   **CRITICAL: Always Monitor Build Output**
+   - The script output MUST show these key messages in order:
+     1. "Building for iPhone..." - Build started
+     2. "** BUILD SUCCEEDED **" - Build completed successfully
+     3. "Installing and running on iPhone..." - Installation starting
+     4. "App installed:" with bundleID - Installation successful
+     5. "Launched application" - App is running
+   - If ANY of these messages are missing, the app is NOT running
+   - Common issues to check:
+     - Build errors: Look for red error messages in output
+     - Missing provisioning profiles
+     - Device not trusted
+     - App crash on launch
+   
+   **Log Files to Monitor:**
+   - Build logs: Check for compilation errors
+   - Console output: Run `xcrun devicectl device process list` to verify app is running
+   - Server logs: Check `/tmp/claude_conversation.log` for transcription activity
+   - Always read through ALL output before confirming success
+   
+   **RUNTIME LOG MONITORING:**
+   - ALL applications MUST write runtime logs to files
+   - Monitor these logs CONTINUOUSLY during execution:
+     - Server logs: `/tmp/server_debug.log` or similar
+     - iOS app logs: Use `xcrun devicectl device log` to capture device logs
+     - WebSocket connection logs
+     - Error logs
+   - Every Node.js server MUST include:
+     ```javascript
+     const LOG_FILE = path.join(__dirname, 'runtime.log');
+     function log(message) {
+       const timestamp = new Date().toISOString();
+       const logEntry = `[${timestamp}] ${message}\n`;
+       console.log(logEntry.trim());
+       fs.appendFileSync(LOG_FILE, logEntry);
+     }
+     ```
+   - After starting ANY process:
+     1. tail -f the log file
+     2. Watch for successful startup messages
+     3. Monitor for errors
+     4. Verify expected connections are established
+     5. Confirm data is flowing (transcripts, responses, etc.)
+   - NEVER assume an app is working just because the process started
+   - Always verify through runtime logs that:
+     - Connections are established
+     - Data is being received
+     - Responses are being sent
+     - No errors are occurring
+   
+   - Alternative direct command:
+     ```bash
+     xcodebuild -project ClaudeCodeVoiceControl.xcodeproj \
+       -scheme ClaudeCodeVoiceControl \
+       -destination 'id=00008101-000359212650001E' \
+       -configuration Debug \
+       clean build
+     ```
+   - This provides full visibility into the build process and errors
+   - The user can see all output without manual Xcode interaction
 
 6. **Proactive Task List Usage**
    - Use task lists for any multi-step work to ensure nothing is forgotten
@@ -117,6 +216,48 @@ When staging changes or performing git operations:
 - ✅ User speaks: "Deploy to production" → Transcription app types it → Claude runs deployment
 - ✅ User speaks: "Show me the error" → Transcription app types it → Claude reads and explains
 
+## Test-Driven Development (TDD) Approach
+
+This project follows strict Test-Driven Development principles:
+
+### TDD Rules
+1. **Red**: Write a failing test first
+   - Write only enough test code to make it fail
+   - The test defines the desired behavior
+   - Run the test to confirm it fails for the right reason
+
+2. **Green**: Write minimal code to pass
+   - Write only enough production code to make the test pass
+   - Don't write more functionality than the test requires
+   - Keep the implementation simple
+
+3. **Refactor**: Clean up the code
+   - Improve code structure without changing behavior
+   - All tests must continue to pass
+   - Remove duplication and improve readability
+
+### TDD Workflow for Voice Development
+- User describes desired functionality through voice
+- Claude writes the failing test first
+- Run test to verify it fails appropriately
+- Write minimal implementation to pass the test
+- Run test to verify it passes
+- Refactor if needed while keeping tests green
+- Commit each complete TDD cycle
+
+### Testing Infrastructure
+- **Test Execution**: Use `xcodebuild test -project ClaudeCodeVoiceControl.xcodeproj -scheme ClaudeCodeVoiceControl -destination 'id=00008101-000359212650001E' -only-testing:ClaudeCodeVoiceControlTests`
+- **iPhone Device**: 00008101-000359212650001E
+- **Run Script**: `./run-on-iphone.sh` for app deployment
+- **Live Feedback**: Xcode provides real-time test indicators (✅/❌)
+
+### First Successful Test Milestone
+✅ **Microphone Permission Test** - Validates device audio access
+- Test: `testMicrophonePermission()` in ClaudeCodeVoiceControlTests
+- Status: PASSED ✅ - Microphone permission GRANTED
+- Execution: 0.007 seconds on device
+- Foundation for voice-controlled accessibility features
+
 ## Critical Reminder
 This system enables fully accessible computing through voice alone. The user relies on:
 1. The external voice transcription app to convert speech to text
@@ -128,6 +269,7 @@ Every interaction must be:
 - Fully automated through Claude's tools
 - Accessible via voice commands only
 - Completed without any manual intervention
+- Follow TDD principles for sustainable development
 
 The combination of the external voice transcription system and Claude Code with skipped permissions creates a powerful accessibility tool for users with physical limitations.
 
@@ -157,4 +299,53 @@ The combination of the external voice transcription system and Claude Code with 
   - Edit file → git add → git commit → git push
   - All in one continuous operation without waiting
 - This is especially important given the voice-only interface where manual git operations are difficult
+
+## Long-Running Processes with tmux
+
+### Why tmux is Essential
+- Claude Code's Bash tool runs in non-interactive mode (no TTY)
+- Processes that need continuous operation must run in tmux sessions
+- This provides real terminal environments for servers, monitors, and interactive tools
+
+### Required tmux Usage
+For ANY process that needs to run continuously (servers, narrators, monitors), ALWAYS use tmux:
+
+1. **Create session**: `tmux new-session -d -s [name] "command"`
+   - Example: `tmux new-session -d -s narrator "cd /path && python app.py"`
+   
+2. **Check output**: `tmux capture-pane -t [name] -p`
+   - Use with `| tail -20` to see recent output
+   - Use with `| head -20` to see startup messages
+   
+3. **Send commands**: `tmux send-keys -t [name] "command" Enter`
+   - Useful for interacting with running processes
+   
+4. **List sessions**: `tmux list-sessions`
+   - Always check what's already running
+   
+5. **Kill session**: `tmux kill-session -t [name]`
+   - Clean up when done
+
+### Common Use Cases
+- **Python/Node.js servers**: Always run in tmux
+- **Monitoring tools**: Keep them running in background
+- **Interactive CLIs**: Maintain their state in tmux
+- **Voice narrators**: Run Gemini Live API tools in tmux
+
+### Example Workflow
+```bash
+# Check if session exists
+tmux list-sessions | grep narrator || echo "Not running"
+
+# Start narrator
+tmux new-session -d -s narrator "cd ~/project && python narrator.py"
+
+# Monitor output
+tmux capture-pane -t narrator -p | tail -20
+
+# Stop when done
+tmux kill-session -t narrator
+```
+
+This ensures all long-running processes remain accessible and manageable.
 
