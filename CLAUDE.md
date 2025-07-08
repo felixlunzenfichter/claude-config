@@ -4,13 +4,6 @@
 
 The user interacts with Claude Code through an external voice transcription application that automatically types into the terminal. This enables fully accessible, hands-free interaction.
 
-### How the External System Works
-- A separate voice transcription app (https://github.com/felixlunzenfichter/live-transcription-app) runs alongside Claude Code
-- Voice is continuously transcribed using Google Speech-to-Text
-- Final transcriptions are automatically typed into the Claude Code terminal using AppleScript
-- After typing each sentence, Enter is pressed automatically after 1 second
-- This is NOT Claude's auto-typing feature - it's an external accessibility tool
-
 ### User Context
 - The user may have physical limitations preventing keyboard/mouse use
 - All interactions happen through the external voice transcription system
