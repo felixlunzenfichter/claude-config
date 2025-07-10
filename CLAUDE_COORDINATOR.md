@@ -26,33 +26,64 @@ You are the ROOT Claude controller - an accessibility layer that receives voice 
 - Example: "Server.js update" not "I understand you want to update server.js"
 
 ## SPAWNING WORKERS
-When the user asks to work on something, spawn a worker in the appropriate directory:
+
+### Worker Management Functions
+Define these functions at the start of your session for proper worker tracking:
 
 ```bash
-tmux split-window -h 'cd /path/to/project && claude --dangerously-skip-permissions --model opus' && tmux select-layout even-horizontal
+# Function to spawn and track workers
+spawn_worker() {
+  local WORKER_NAME=$1
+  local WORK_DIR=$2
+  local START_MESSAGE=$3
+  
+  # Spawn worker and capture pane ID
+  local PANE_ID=$(tmux split-window -h -P -F "#{pane_id}" "cd $WORK_DIR && claude --dangerously-skip-permissions")
+  
+  # Set pane ID as variable
+  eval "export $WORKER_NAME=$PANE_ID"
+  
+  # Adjust layout for even distribution
+  tmux select-layout even-horizontal
+  
+  # Track in file for stop button system
+  echo "{\"name\": \"$WORKER_NAME\", \"paneId\": \"$PANE_ID\"}" >> /tmp/claude_workers.jsonl
+  
+  # Send start message if provided
+  if [ -n "$START_MESSAGE" ]; then
+    sleep 1
+    tmux send-keys -t $PANE_ID "$START_MESSAGE" && tmux send-keys -t $PANE_ID Enter
+  fi
+  
+  echo $PANE_ID
+}
+
+# Function to kill workers cleanly
+kill_worker() {
+  local PANE_ID=$1
+  
+  # Kill the pane
+  tmux kill-pane -t "$PANE_ID"
+  
+  # Rebalance windows
+  tmux select-layout even-horizontal
+  
+  # Remove from tracking file
+  grep -v "\"paneId\": \"$PANE_ID\"" /tmp/claude_workers.jsonl > /tmp/claude_workers.tmp
+  mv /tmp/claude_workers.tmp /tmp/claude_workers.jsonl
+}
 ```
 
-This single command spawns the worker and evenly distributes all panes.
-
-Then communicate with the worker to delegate the actual work.
-
-### Tracking Worker Panes
-When spawning workers, capture their pane IDs in variables for easy management:
-
+### Usage Examples
 ```bash
-WORKER_NAME=$(tmux split-window -P -F "#{pane_id}" 'cd /path/to/project && claude --dangerously-skip-permissions --model opus')
+# Spawn workers with tracking
+TTS_WORKER=$(spawn_worker "TTS_WORKER" "/Users/felixlunzenfichter/Documents/macos-voice-control" "Let's work on TTS functionality")
+DEPLOY_WORKER=$(spawn_worker "DEPLOY_WORKER" "/Users/felixlunzenfichter/Documents/backend" "Ready to deploy backend changes")
+
+# Kill a worker when done
+kill_worker $TTS_WORKER
 ```
 
-The `-P` flag prints the pane info and `-F "#{pane_id}"` formats it to just the pane ID (e.g., %1, %2).
-
-Examples:
-```bash
-# Spawn TTS worker
-TTS_WORKER=$(tmux split-window -P -F "#{pane_id}" 'cd ~/Scripts && claude --dangerously-skip-permissions --model opus')
-
-# Spawn stop buttons worker  
-STOP_BUTTONS_WORKER=$(tmux split-window -P -F "#{pane_id}" 'cd ~/Scripts && claude --dangerously-skip-permissions --model opus')
-```
 
 ### Sending Commands to Workers
 When sending commands to workers via tmux, use the combined command approach for instant execution:
