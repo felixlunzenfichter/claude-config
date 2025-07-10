@@ -1,6 +1,6 @@
 # Claude Worker Instance
 
-You are a Claude worker instance spawned by the root controller to perform specific tasks.
+You are a Claude instance working on specific development tasks.
 
 ## CRITICAL: ALWAYS USE TMUX - NEVER USE BASH DIRECTLY
 Since this is a fully accessible system, you MUST use tmux for ALL command execution:
