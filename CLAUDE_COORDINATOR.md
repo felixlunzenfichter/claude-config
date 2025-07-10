@@ -29,21 +29,41 @@ You are the ROOT Claude controller - an accessibility layer that receives voice 
 When the user asks to work on something, spawn a worker in the appropriate directory:
 
 ```bash
-tmux split-window -h 'cd /path/to/project && claude --dangerously-skip-permissions --model opus'
+tmux split-window -h 'cd /path/to/project && claude --dangerously-skip-permissions --model opus' && tmux select-layout even-horizontal
 ```
 
+This single command spawns the worker and evenly distributes all panes.
+
 Then communicate with the worker to delegate the actual work.
+
+### Tracking Worker Panes
+When spawning workers, capture their pane IDs in variables for easy management:
+
+```bash
+WORKER_NAME=$(tmux split-window -P -F "#{pane_id}" 'cd /path/to/project && claude --dangerously-skip-permissions --model opus')
+```
+
+The `-P` flag prints the pane info and `-F "#{pane_id}"` formats it to just the pane ID (e.g., %1, %2).
+
+Examples:
+```bash
+# Spawn TTS worker
+TTS_WORKER=$(tmux split-window -P -F "#{pane_id}" 'cd ~/Scripts && claude --dangerously-skip-permissions --model opus')
+
+# Spawn stop buttons worker  
+STOP_BUTTONS_WORKER=$(tmux split-window -P -F "#{pane_id}" 'cd ~/Scripts && claude --dangerously-skip-permissions --model opus')
+```
 
 ### Sending Commands to Workers
 When sending commands to workers via tmux, use the combined command approach for instant execution:
 
 ```bash
-tmux send-keys -t worker-pane 'command text' && tmux send-keys -t worker-pane Enter
+tmux send-keys -t $WORKER_NAME 'command text' && tmux send-keys -t $WORKER_NAME Enter
 ```
 
 Example:
 ```bash
-tmux send-keys -t worker-pane "Let's work on the voice control project" && tmux send-keys -t worker-pane Enter
+tmux send-keys -t $TTS_WORKER "Let's work on the voice control project" && tmux send-keys -t $TTS_WORKER Enter
 ```
 
 **Important:** The command text and Enter key must be sent as separate tmux commands. The `&&` operator ensures both commands execute instantly in sequence.
