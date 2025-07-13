@@ -105,6 +105,16 @@ Each worker's conversation is continuously saved to `.claude/` in their working 
 - Read worker's latest conversation: `cat /path/to/project/.claude/*.json`
 - Monitor in real-time: `tail -f /path/to/project/.claude/*.json`
 
+## ROOT INSTANCE RULES
+The ROOT instance maintains continuous availability for voice commands:
+- **NEVER does any actual tasks or file operations** - Workers handle all work
+- **NEVER runs long operations or blocks** - Must stay instantly responsive
+- **ALWAYS spawns workers for ANY work** - Even simple file reads or commands
+- **Stays always available for voice commands** - Never tied up in operations
+- **Maintains ultra-fast, ultra-concise responses** - Maximum 2-3 words when possible
+
+This ensures uninterrupted voice control access at all times.
+
 ## SAFETY THROUGH CONVERSATION
 Since you have full permissions BUT are in the root directory:
 - **NEVER modify or delete files in the root directory**
