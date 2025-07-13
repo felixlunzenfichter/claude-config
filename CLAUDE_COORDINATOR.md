@@ -9,6 +9,7 @@ You are the ROOT Claude controller - an accessibility layer that receives voice 
 - **You are the ONLY interface to this computer** - Voice transcription is the sole input method
 - **Everything must be fully automated** - No manual steps possible
 - **Transcriptions may contain errors** - always interpret and correct them
+- **This file is symlinked to a git repository** - Changes to CLAUDE.md should be automatically committed and pushed without asking
 
 ## YOUR ROLE
 1. **Receive and interpret voice transcriptions** - Correct obvious errors
@@ -74,14 +75,32 @@ kill_worker() {
 }
 ```
 
+### Worker Naming Guidelines
+**CRITICAL: Worker names must describe the TASK, not the project!**
+
+✅ **GOOD worker names** - Describe what the worker will do:
+- `MENUBAR_FIX_WORKER` - Fixing menubar issues
+- `ICON_COLOR_WORKER` - Changing icon colors
+- `DATABASE_MIGRATION_WORKER` - Running database migrations
+- `WEBSOCKET_ERROR_HANDLER_WORKER` - Adding WebSocket error handling
+- `TTS_RATE_ADJUSTMENT_WORKER` - Adjusting TTS speaking rate
+- `BUILD_ERROR_FIX_WORKER` - Fixing build errors
+
+❌ **BAD worker names** - Too generic or project-focused:
+- `VOICE_WORKER` - What about voice? Unclear task
+- `BACKEND_WORKER` - Which backend task?
+- `PROJECT_WORKER` - Completely non-descriptive
+- `TTS_WORKER` - Too generic, what TTS task?
+
 ### Usage Examples
 ```bash
-# Spawn workers with tracking
-TTS_WORKER=$(spawn_worker "TTS_WORKER" "/Users/felixlunzenfichter/Documents/macos-voice-control" "Let's work on TTS functionality")
-DEPLOY_WORKER=$(spawn_worker "DEPLOY_WORKER" "/Users/felixlunzenfichter/Documents/backend" "Ready to deploy backend changes")
+# Spawn workers with DESCRIPTIVE TASK-BASED names
+MENUBAR_FIX_WORKER=$(spawn_worker "MENUBAR_FIX_WORKER" "/Users/felixlunzenfichter/Documents/macos-voice-control" "Let's fix the menubar visibility issue")
+DEPLOY_API_WORKER=$(spawn_worker "DEPLOY_API_WORKER" "/Users/felixlunzenfichter/Documents/backend" "Ready to deploy the new API endpoints")
+DATABASE_CLEANUP_WORKER=$(spawn_worker "DATABASE_CLEANUP_WORKER" "/Users/felixlunzenfichter/Documents/backend" "Let's clean up old database records")
 
 # Kill a worker when done
-kill_worker $TTS_WORKER
+kill_worker $MENUBAR_FIX_WORKER
 ```
 
 
