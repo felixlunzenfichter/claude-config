@@ -198,6 +198,13 @@ send_to_worker() {
 }
 ```
 
+**IMPORTANT: Always use these functions - never use tmux commands directly**
+- Use spawn_worker to create new workers
+- Use send_to_worker to communicate with workers  
+- Use kill_worker to terminate workers
+- NEVER use tmux send-keys, tmux split-window, or tmux kill-pane directly
+- This ensures that no errors occur when sending commands to workers
+
 ### Usage Examples
 ```bash
 # 1. Spawn workers with DESCRIPTIVE TASK-BASED names
@@ -228,32 +235,29 @@ Worker conversations are saved as JSONL files in `/Users/felixlunzenfichter/.cla
 
 ### Always read back first to confirm understanding:
 
-**Simple task:**
-User: "Let's work on my voice control project"  
-You: "Working on voice control project. Will spawn VOICE_CONTROL_SETUP_WORKER."
-Then: `VOICE_CONTROL_SETUP_WORKER=$(spawn_worker "VOICE_CONTROL_SETUP_WORKER" "/path/to/project" "Ready to work on voice control project")`
+**Section 1: Spawning workers (with transcription errors):**
 
-**Major transcription errors:**
-User: "Update the back and server dot JS file"  
-You: "Updating backend server.js file. Will spawn BACKEND_SERVER_UPDATE_WORKER."
+User: "Spawn a worker to update the back and server dot JS file" (transcription error)
+You: "Updating backend server.js file. Spawning BACKEND_SERVER_UPDATE_WORKER."
 Then: `BACKEND_SERVER_UPDATE_WORKER=$(spawn_worker "BACKEND_SERVER_UPDATE_WORKER" "/path/to/backend" "Let's update server.js")`
 
-User: "Add air handling to the web socket connection"  
-You: "Adding error handling to WebSocket connection. Will spawn WEBSOCKET_ERROR_HANDLER_WORKER."
+User: "Spawn a worker to add air handling to the web socket connection" (transcription error)  
+You: "Adding error handling to WebSocket connection. Spawning WEBSOCKET_ERROR_HANDLER_WORKER."
 Then: `WEBSOCKET_ERROR_HANDLER_WORKER=$(spawn_worker "WEBSOCKET_ERROR_HANDLER_WORKER" "/path/to/project" "Adding error handling to WebSocket")`
 
-User: "Install the I O S app on my I phone"  
-You: "Installing iOS app on iPhone. Will spawn IOS_APP_INSTALLER_WORKER."
+User: "Spawn a worker to install the I O S app on my I phone" (transcription error)
+You: "Installing iOS app on iPhone. Spawning IOS_APP_INSTALLER_WORKER."
 Then: `IOS_APP_INSTALLER_WORKER=$(spawn_worker "IOS_APP_INSTALLER_WORKER" "/path/to/ios/project" "Installing iOS app on iPhone")`
 
-**With additional context when helpful:**
+**Section 2: Telling workers (with transcription errors):**
+
 User: "Tell the worker to on stage the changes in GoogleBackend.swift" (transcription error)
 You: "Telling GIT_SUBMODULE_IOS_FIX_WORKER to unstage GoogleBackend.swift changes."
 Then: `send_to_worker $GIT_SUBMODULE_IOS_FIX_WORKER "git restore --staged iOS app/ClaudeCodeMicrophone/GoogleBackend.swift"`
 
-User: "Kill all processes except cloud coordinator"  
-You: "Killing all processes except Claude coordinator. Will spawn PROCESS_CLEANUP_WORKER to kill non-coordinator processes."
-Then: `PROCESS_CLEANUP_WORKER=$(spawn_worker "PROCESS_CLEANUP_WORKER" "/" "Killing all processes except Claude coordinator")`
+User: "Tell the worker to kill all processes except Cloud coordinator" (transcription error)
+You: "Telling PROCESS_CLEANUP_WORKER to kill all processes except Claude coordinator."
+Then: `send_to_worker $PROCESS_CLEANUP_WORKER "pkill -v 'claude|Claude'"`
 
 ## PRESENTATION COMPLETION PROTOCOL
 
