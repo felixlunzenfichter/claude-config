@@ -197,71 +197,22 @@ send_to_worker() {
 }
 ```
 
-### Picking the Right Worker by Checking Existing Workers
-Before creating a new worker or sending a task to an existing worker, check which workers exist to make sure you're sending it to the right one or not creating one unnecessarily: `tmux list-panes -F "#{pane_id} #{pane_current_command}"`
-
-### Worker Reuse Guidelines
-**CRITICAL: Reuse workers for related tasks in the same project/directory!**
-
-When to **REUSE** an existing worker:
-- Working on the same project/codebase
-- Continuing a related task
-- The worker already has context about the files/system
-- You need to check on previous work or continue iterations
-
-When to **SPAWN NEW** worker:
-- Different project or directory
-- Completely unrelated task
-- Worker is stuck or unresponsive
-- Need a fresh context for debugging
-
-✅ **GOOD reuse examples:**
-```bash
-# First request: "Update the server configuration"
-SERVER_CONFIG_WORKER=$(spawn_worker "SERVER_CONFIG_WORKER" "/path/to/project" "Update server config")
-
-# Later request: "Also update the client config in the same project"
-# REUSE the existing worker - it already knows the project structure
-send_to_worker $SERVER_CONFIG_WORKER "Now let's update the client config too"
-```
-
-❌ **BAD: Spawning unnecessary new workers:**
-```bash
-# First request: "Fix the git commit message"
-GIT_FIX_WORKER=$(spawn_worker "GIT_FIX_WORKER" "/project" "Fix git commit message")
-
-# Later request: "Now push the changes" 
-# DON'T spawn new worker - reuse GIT_FIX_WORKER who already has the git context
-GIT_PUSH_WORKER=$(spawn_worker "GIT_PUSH_WORKER" "/project" "Push the changes")  # WRONG!
-# Should have done: send_to_worker $GIT_FIX_WORKER "git push"
-```
-
-### Worker Naming Guidelines
-**CRITICAL: Worker names must describe the TASK, not the project!**
-
-✅ **GOOD worker names** - Describe what the worker will do:
-- `MENUBAR_FIX_WORKER` - Fixing menubar issues
-- `ICON_COLOR_WORKER` - Changing icon colors
-- `DATABASE_MIGRATION_WORKER` - Running database migrations
-- `WEBSOCKET_ERROR_HANDLER_WORKER` - Adding WebSocket error handling
-- `TTS_RATE_ADJUSTMENT_WORKER` - Adjusting TTS speaking rate
-- `BUILD_ERROR_FIX_WORKER` - Fixing build errors
-
-❌ **BAD worker names** - Too generic or project-focused:
-- `VOICE_WORKER` - What about voice? Unclear task
-- `BACKEND_WORKER` - Which backend task?
-- `PROJECT_WORKER` - Completely non-descriptive
-- `TTS_WORKER` - Too generic, what TTS task?
-
 ### Usage Examples
 ```bash
-# Spawn workers with DESCRIPTIVE TASK-BASED names
+# 1. Spawn workers with DESCRIPTIVE TASK-BASED names
 MENUBAR_FIX_WORKER=$(spawn_worker "MENUBAR_FIX_WORKER" "/Users/felixlunzenfichter/Documents/macos-voice-control" "Let's fix the menubar visibility issue")
 DEPLOY_API_WORKER=$(spawn_worker "DEPLOY_API_WORKER" "/Users/felixlunzenfichter/Documents/backend" "Ready to deploy the new API endpoints")
 DATABASE_CLEANUP_WORKER=$(spawn_worker "DATABASE_CLEANUP_WORKER" "/Users/felixlunzenfichter/Documents/backend" "Let's clean up old database records")
 
-# Kill a worker when done
+# 2. Send messages to existing workers
+send_to_worker $MENUBAR_FIX_WORKER "Check if the menubar is now visible in System Preferences"
+send_to_worker $DEPLOY_API_WORKER "git push origin main"
+send_to_worker $DATABASE_CLEANUP_WORKER "DELETE FROM logs WHERE created_at < '2024-01-01'"
+
+# 3. Kill workers when done
 kill_worker $MENUBAR_FIX_WORKER
+kill_worker $DEPLOY_API_WORKER
+kill_worker $DATABASE_CLEANUP_WORKER
 ```
 
 ### Monitoring Worker Conversations
