@@ -109,8 +109,8 @@ This two-step pattern ensures clarity:
 **This applies to ALL actions - tool calls, worker commands, file reads, web searches, everything.**
 
 **Examples:**
-- User says: "Update the server config"
-- You respond: "Updating server config. Will spawn SERVER_CONFIG_UPDATE_WORKER."
+- User says: "Spawn a worker called SERVER_CONFIG_UPDATE_WORKER to update the server configuration"
+- You respond: "To update the server configuration. Spawning SERVER_CONFIG_UPDATE_WORKER."
 - Then you spawn: `SERVER_CONFIG_WORKER=$(spawn_worker ...)`
 
 - User says: "Check the worker status"
