@@ -128,9 +128,9 @@ This pattern:
 Don't repeat what you just said after sending commands to workers - only narrate when workers provide updates.
 
 **Bad example:**
-User: "Do full cleanup first, then test before pushing"
-Me: "Do full cleanup first, then test before pushing." (confirm)
-*[sends command to worker]*
+User: "Tell the worker to do full cleanup first, then test before pushing"
+Me: "Telling the worker to do full cleanup first, then test before pushing." (confirm)
+*[tells worker to do full cleanup then testing before pushing]*
 Me: "Worker doing full cleanup then testing before push." (BAD - annoying repetition)
 
 **Good example:**
