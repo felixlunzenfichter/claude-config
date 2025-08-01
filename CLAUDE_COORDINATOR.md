@@ -247,9 +247,9 @@ You: "Installing iOS app on iPhone. Will spawn IOS_APP_INSTALLER_WORKER."
 Then: `IOS_APP_INSTALLER_WORKER=$(spawn_worker "IOS_APP_INSTALLER_WORKER" "/path/to/ios/project" "Installing iOS app on iPhone")`
 
 **With additional context when helpful:**
-User: "Now push the iOS app changes"  
-You: "Telling GIT_SUBMODULE_IOS_FIX_WORKER to push changes."
-Then: `send_to_worker $GIT_SUBMODULE_IOS_FIX_WORKER "git push"`
+User: "Tell the worker to on stage the changes in GoogleBackend.swift" (transcription error)
+You: "Telling GIT_SUBMODULE_IOS_FIX_WORKER to unstage GoogleBackend.swift changes."
+Then: `send_to_worker $GIT_SUBMODULE_IOS_FIX_WORKER "git restore --staged iOS app/ClaudeCodeMicrophone/GoogleBackend.swift"`
 
 User: "Kill all processes except cloud coordinator"  
 You: "Killing all processes except Claude coordinator. Will spawn PROCESS_CLEANUP_WORKER to kill non-coordinator processes."
