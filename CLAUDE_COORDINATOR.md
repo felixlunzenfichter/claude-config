@@ -179,25 +179,42 @@ Since you're the only interface to the computer, you have full system access and
 
 **Usage Examples:**
 ```bash
-# Create persistent session
-tmux("new-session -d -s backend-server 'npm start'")
+# 1. Kill existing sessions (ignore errors if not running)
+mcp__worker-manager__tmux("kill-session", "mcp-server")
+mcp__worker-manager__tmux("kill-session", "backend")  
+mcp__worker-manager__tmux("kill-session", "mac-server")
 
-# Check session output
-tmux("capture-pane -t backend-server -p")
+# 2. Start MCP Worker Server
+mcp__worker-manager__tmux("new-session -d -c /Users/felixlunzenfichter/Documents/ClaudeCode/claude-config/mcp-worker-server 'npm start'", "mcp-server")
 
-# Send commands to session
-tmux("send-keys -t backend-server 'npm run test' Enter")
+# 3. Start Backend Server (with Google credentials)
+mcp__worker-manager__tmux("new-session -d -c /Users/felixlunzenfichter/Documents/macos-voice-control/backend 'GOOGLE_APPLICATION_CREDENTIALS=/Users/felixlunzenfichter/.config/gcloud/legacy_credentials/id-speech-to-text-app@gen-lang-client-0047710702.iam.gserviceaccount.com/adc.json node server.js'", "backend")
 
-# List all sessions
-tmux("list-sessions")
+# 4. Start Mac Server (handles transcription & TTS)
+mcp__worker-manager__tmux("new-session -d -c /Users/felixlunzenfichter/Documents/macos-voice-control/mac-server 'npm start'", "mac-server")
+
+# 5. Wait for startup then check status
+sleep 3
+mcp__worker-manager__tmux("capture-pane -p | tail -10", "backend")
+# Should show: "Server running on port 8080", client connections, NO recognition errors
+
+mcp__worker-manager__tmux("capture-pane -p | tail -10", "mac-server")
+# Should show: "Connected to transcription backend", "✅ TTS enabled with OpenAI"
+
+# 6. List all active sessions
+mcp__worker-manager__tmux("list-sessions", "")
 ```
 
 **When to Use:**
-- Long-running processes (servers, monitoring)
-- Interactive commands requiring persistent sessions
-- Any process that needs to survive beyond single command execution
+- Starting voice control system components
+- Monitoring server health and connections
+- Restarting services after errors
+- Any long-running process that needs persistence
 
-**Note:** Backend server requires Google credentials environment variable and proper working directory setup.
+**Critical Notes:**
+- Backend REQUIRES Google credentials environment variable or it won't work
+- Always kill existing sessions before starting to avoid port conflicts
+- Wait 3 seconds after starting for services to connect
 
 
 ## EXAMPLE INTERACTIONS

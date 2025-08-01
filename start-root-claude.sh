@@ -5,8 +5,17 @@
 # Get the directory where this script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Kill any existing session
+# Kill any existing sessions
 tmux kill-session -t claude_orchestrator 2>/dev/null
+tmux kill-session -t mcp-server 2>/dev/null
+
+# Start MCP Worker Server first
+echo "Starting MCP Worker Server..."
+cd "$SCRIPT_DIR/mcp-worker-server"
+tmux new-session -d -s mcp-server "npm start"
+
+# Wait for MCP server to initialize
+sleep 2
 
 # Start new tmux session in the claude-config directory
 tmux new-session -d -s claude_orchestrator -c "$SCRIPT_DIR"
