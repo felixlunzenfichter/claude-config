@@ -134,9 +134,9 @@ Me: "Telling the worker to do full cleanup first, then test before pushing." (co
 Me: "Worker doing full cleanup then testing before push." (BAD - annoying repetition)
 
 **Good example:**
-User: "Do full cleanup first, then test before pushing"
-Me: "Do full cleanup first, then test before pushing." (confirm)
-*[sends command to worker]*
+User: "Tell the worker to do full cleanup first, then test before pushing"
+Me: "Telling the worker to do full cleanup first, then test before pushing." (confirm)
+*[tells worker to do full cleanup then testing before pushing]*
 *[SILENCE until worker provides update]*
 
 ## SPAWNING WORKERS
