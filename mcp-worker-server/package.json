@@ -1,0 +1,22 @@
+{
+  "name": "mcp-worker-server",
+  "version": "1.0.0",
+  "description": "MCP server for Claude worker management and tmux tools",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "mcp",
+    "claude",
+    "tmux",
+    "worker"
+  ],
+  "author": "",
+  "license": "MIT"
+}

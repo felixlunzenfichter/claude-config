@@ -1,29 +1,32 @@
 #!/bin/bash
 
-# Start Claude Coordinator with auto-loaded worker functions
+# Start Claude Coordinator with MCP worker tools
 
 # Get the directory where this script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Kill any existing test session
-tmux kill-session -t claude_orchestrator_test 2>/dev/null
+# Kill any existing session
+tmux kill-session -t claude_orchestrator 2>/dev/null
 
-# Source the worker functions
-source "$SCRIPT_DIR/claude-worker-functions.sh"
+# Start new tmux session in the claude-config directory
+tmux new-session -d -s claude_orchestrator -c "$SCRIPT_DIR"
 
-# Start new tmux session
-tmux new-session -d -s claude_orchestrator_test
+# Register MCP worker-manager server
+claude mcp add worker-manager "$SCRIPT_DIR/mcp-worker-server/index.js"
 
-# Export the functions so they're available in the Claude session
-export -f spawn_worker
-export -f kill_worker
-export -f send_to_worker
-
-# Send command to start Claude with sourced functions
-tmux send-keys -t claude_orchestrator_test "source '$SCRIPT_DIR/claude-worker-functions.sh' && claude --model opus --dangerously-skip-permissions" Enter
+# Start Claude directly in the claude-config directory to access local .claude.json
+tmux send-keys -t claude_orchestrator "claude --model sonnet --dangerously-skip-permissions" Enter
 
 # Clear any existing worker tracking
 > /tmp/claude_workers.jsonl
 
-# Attach to the session
-tmux attach -t claude_orchestrator_test
+# Open new Terminal window and attach to the session
+echo "Opening new Terminal window..."
+osascript -e '
+tell application "Terminal"
+    set newWindow to do script "tmux attach -t claude_orchestrator"
+    delay 0.5
+    tell application "System Events" to tell process "Terminal"
+        set value of attribute "AXFullScreen" of window 1 to true
+    end tell
+end tell'
