@@ -1,5 +1,5 @@
 {
-  "name": "mcp-worker-server",
+  "name": "coordinator-tools",
   "version": "1.0.0",
   "description": "MCP server for Claude worker management and tmux tools",
   "main": "index.js",

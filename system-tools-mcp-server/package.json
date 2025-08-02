@@ -1,5 +1,5 @@
 {
-  "name": "system-tools-mcp",
+  "name": "system-tools",
   "version": "1.0.0",
   "description": "System tools MCP server providing tmux access to all Claude workers",
   "main": "index.js",

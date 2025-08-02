@@ -1,10 +1,10 @@
 {
   "mcpServers": {
-    "worker-manager": {
+    "coordinator-tools": {
       "type": "stdio",
       "command": "/opt/homebrew/bin/node",
       "args": [
-        "/Users/felixlunzenfichter/Documents/ClaudeCode/claude-config/mcp-worker-server/index.js"
+        "/Users/felixlunzenfichter/Documents/ClaudeCode/claude-config/coordinator-tools-mcp-server/index.js"
       ],
       "env": {}
     }

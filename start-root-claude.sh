@@ -28,12 +28,12 @@ tmux kill-session -t system-tools 2>/dev/null
 
 # Start System Tools MCP Server first
 echo "Starting System Tools MCP Server..."
-cd "$SCRIPT_DIR/system-tools-mcp"
+cd "$SCRIPT_DIR/system-tools-mcp-server"
 tmux new-session -d -s system-tools "npm start"
 
 # Start MCP Worker Server
 echo "Starting MCP Worker Server..."
-cd "$SCRIPT_DIR/mcp-worker-server"
+cd "$SCRIPT_DIR/coordinator-tools-mcp-server"
 tmux new-session -d -s mcp-server "npm start"
 
 # Wait for MCP servers to initialize
@@ -42,11 +42,11 @@ sleep 2
 # Start new tmux session in the claude-config directory
 tmux new-session -d -s claude_orchestrator -c "$SCRIPT_DIR"
 
-# Register MCP worker-manager server
-claude mcp add worker-manager "$SCRIPT_DIR/mcp-worker-server/index.js"
+# Register MCP coordinator-tools server
+claude mcp add coordinator-tools "$SCRIPT_DIR/coordinator-tools-mcp-server/index.js"
 
 # Register system-tools server with user scope for global access
-claude mcp add --scope user system-tools /opt/homebrew/bin/node "$SCRIPT_DIR/system-tools-mcp/index.js"
+claude mcp add --scope user system-tools /opt/homebrew/bin/node "$SCRIPT_DIR/system-tools-mcp-server/index.js"
 
 # Start Claude directly in the claude-config directory to access local .claude.json
 tmux send-keys -t claude_orchestrator "claude --model sonnet --dangerously-skip-permissions" Enter

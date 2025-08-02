@@ -69,21 +69,21 @@ case 'tmux': {
 ### Starting the Voice Control Servers
 ```javascript
 // 1. Kill existing sessions (ignore errors if not running)
-mcp__system-tools__tmux("kill-session", "backend")
-mcp__system-tools__tmux("kill-session", "mac-server")
+system-tools__tmux("kill-session", "backend")
+system-tools__tmux("kill-session", "mac-server")
 
 // 2. Start Backend Server (with Google credentials)
-mcp__system-tools__tmux("new-session -d -c /Users/felixlunzenfichter/Documents/macos-voice-control/backend 'GOOGLE_APPLICATION_CREDENTIALS=/Users/felixlunzenfichter/.config/gcloud/legacy_credentials/id-speech-to-text-app@gen-lang-client-0047710702.iam.gserviceaccount.com/adc.json node server.js'", "backend")
+system-tools__tmux("new-session -d -c /Users/felixlunzenfichter/Documents/macos-voice-control/backend 'GOOGLE_APPLICATION_CREDENTIALS=/Users/felixlunzenfichter/.config/gcloud/legacy_credentials/id-speech-to-text-app@gen-lang-client-0047710702.iam.gserviceaccount.com/adc.json node server.js'", "backend")
 
 // 3. Start Mac Server (handles transcription & TTS)
-mcp__system-tools__tmux("new-session -d -c /Users/felixlunzenfichter/Documents/macos-voice-control/mac-server 'npm start'", "mac-server")
+system-tools__tmux("new-session -d -c /Users/felixlunzenfichter/Documents/macos-voice-control/mac-server 'npm start'", "mac-server")
 
 // 4. Wait for startup then check status
 setTimeout(() => {
-  mcp__system-tools__tmux("capture-pane -p | tail -10", "backend")
+  system-tools__tmux("capture-pane -p | tail -10", "backend")
   // Should show: "Server running on port 8080"
   
-  mcp__system-tools__tmux("capture-pane -p | tail -10", "mac-server")
+  system-tools__tmux("capture-pane -p | tail -10", "mac-server")
   // Should show: "Connected to transcription backend", "✅ TTS enabled with OpenAI"
 }, 3000);
 ```

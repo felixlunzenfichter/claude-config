@@ -68,7 +68,7 @@ async function getPaneIdByName(workerName) {
 
 const server = new Server(
   {
-    name: 'mcp-worker-server',
+    name: 'coordinator-tools',
     version: '1.0.0',
   },
   {
