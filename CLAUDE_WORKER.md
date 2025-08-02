@@ -62,6 +62,7 @@ case 'tmux': {
 - For global commands like list-sessions, use "default" as the session name
 - To create sessions in specific directories, use `-c /path/to/dir` with new-session
 - For existing sessions, use send-keys to change directories (tmux limitation)
+- **NEVER use -t flag in commands** - Will throw error since function handles session targeting automatically
 
 ## Voice Control System Management
 
