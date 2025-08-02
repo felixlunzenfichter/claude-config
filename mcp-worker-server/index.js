@@ -187,31 +187,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         // Wait for Claude to initialize
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Read CLAUDE_WORKER.md from parent directory
-        const claudeWorkerPath = '/Users/felixlunzenfichter/Documents/ClaudeCode/claude-config/CLAUDE_WORKER.md';
-        let generalInstructions = '';
-        try {
-          generalInstructions = await fs.readFile(claudeWorkerPath, 'utf8');
-        } catch (error) {
-          console.error('Could not read CLAUDE_WORKER.md:', error);
-        }
+        // Build message
+        let fullMessage = `General instructions: Please read /Users/felixlunzenfichter/Documents/ClaudeCode/claude-config/CLAUDE_WORKER.md and confirm your understanding.\nSpecific task: ${startMessage || 'Ready for commands.'}`;
         
-        // Build message with simple format
-        let fullMessage = '';
-        
-        if (generalInstructions) {
-          fullMessage = `Here are your general instructions: ${generalInstructions}`;
-          if (startMessage) {
-            fullMessage += ` Here are your specific instructions: ${startMessage}`;
-          }
-        } else if (startMessage) {
-          fullMessage = startMessage;
-        } else {
-          fullMessage = 'Ready to work on tasks.';
-        }
-        
-        // Send the full message (without Enter at the end)
-        await execAsync(`tmux send-keys -t "${paneId}" "${fullMessage.replace(/"/g, '\\"').replace(/\n/g, '" Enter "')}"`);
+        // Send the message
+        await execAsync(`tmux send-keys -t "${paneId}" "${fullMessage}"`);
         
         // Wait 1 second before pressing Enter to give time for the message to process
         await new Promise(resolve => setTimeout(resolve, 1000));
