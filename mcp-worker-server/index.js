@@ -162,24 +162,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['worker_name']
         }
       },
-      {
-        name: 'tmux',
-        description: 'Execute tmux commands for persistent session management',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            command: {
-              type: 'string',
-              description: 'The tmux command to execute'
-            },
-            session_name: {
-              type: 'string',
-              description: 'Session name for session-specific commands'
-            }
-          },
-          required: ['command', 'session_name']
-        }
-      }
     ],
   };
 });
@@ -202,11 +184,38 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         
         await addWorkerToRegistry(workerName, paneId);
         
-        if (startMessage) {
-          await execAsync(`tmux send-keys -t "${paneId}" "${startMessage}"`);
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          await execAsync(`tmux send-keys -t "${paneId}" Enter`);
+        // Wait for Claude to initialize
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Read CLAUDE_WORKER.md from parent directory
+        const claudeWorkerPath = '/Users/felixlunzenfichter/Documents/ClaudeCode/claude-config/CLAUDE_WORKER.md';
+        let generalInstructions = '';
+        try {
+          generalInstructions = await fs.readFile(claudeWorkerPath, 'utf8');
+        } catch (error) {
+          console.error('Could not read CLAUDE_WORKER.md:', error);
         }
+        
+        // Build message with simple format
+        let fullMessage = '';
+        
+        if (generalInstructions) {
+          fullMessage = `Here are your general instructions: ${generalInstructions}`;
+          if (startMessage) {
+            fullMessage += ` Here are your specific instructions: ${startMessage}`;
+          }
+        } else if (startMessage) {
+          fullMessage = startMessage;
+        } else {
+          fullMessage = 'Ready to work on tasks.';
+        }
+        
+        // Send the full message (without Enter at the end)
+        await execAsync(`tmux send-keys -t "${paneId}" "${fullMessage.replace(/"/g, '\\"').replace(/\n/g, '" Enter "')}"`);
+        
+        // Wait 1 second before pressing Enter to give time for the message to process
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await execAsync(`tmux send-keys -t "${paneId}" Enter`);
         
         return {
           content: [
@@ -299,32 +308,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: 'text',
               text: stdout
-            }
-          ]
-        };
-      }
-      
-      case 'tmux': {
-        const { command, session_name: sessionName } = args;
-        
-        // Error if command contains tmux or -t (redundant with function purpose and session_name parameter)
-        if (command.startsWith('tmux')) {
-          throw new Error('Command should not start with "tmux". Just pass the tmux subcommand.');
-        }
-        if (command.includes('-t')) {
-          throw new Error('Command should not contain -t flag. Use session_name parameter instead.');
-        }
-        
-        // Always construct full tmux command with session target
-        const fullCommand = `tmux ${command} -t ${sessionName}`;
-        
-        const { stdout, stderr } = await execAsync(fullCommand);
-        
-        return {
-          content: [
-            {
-              type: 'text',
-              text: stdout || stderr || 'Command executed successfully'
             }
           ]
         };

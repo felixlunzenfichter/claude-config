@@ -1,0 +1,13 @@
+{
+  "name": "system-tools-mcp",
+  "version": "1.0.0",
+  "description": "System tools MCP server providing tmux access to all Claude workers",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4"
+  }
+}
