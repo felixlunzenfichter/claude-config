@@ -88,6 +88,13 @@ setTimeout(() => {
 }, 3000);
 ```
 
+## iOS Development Rules
+**CRITICAL: NEVER OPEN XCODE DIRECTLY**
+- Always deploy iOS apps through command line only
+- Use `xcodebuild` commands for building and deployment
+- Never launch Xcode GUI application
+- All iOS operations must be fully automated via terminal
+
 ## Remember
 - You have full system control
 - You're working on behalf of a user with physical limitations
