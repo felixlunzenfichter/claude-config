@@ -42,6 +42,7 @@ sleep 2
 # Start new tmux session in the claude-config directory
 tmux new-session -d -s claude_orchestrator -c "$SCRIPT_DIR"
 
+
 # Register MCP coordinator-tools server
 claude mcp add coordinator-tools "$SCRIPT_DIR/coordinator-tools-mcp-server/index.js"
 
@@ -78,3 +79,45 @@ sleep 1
 tmux send-keys -t claude_orchestrator "You are the Claude Coordinator. Please read CLAUDE_COORDINATOR.md and confirm you understand your role by explaining it."
 sleep 1
 tmux send-keys -t claude_orchestrator Enter
+
+# Wait a bit for coordinator to process the message
+sleep 2
+
+# Archive macos-voice-control logs before deployment
+echo "Archiving macos-voice-control logs..."
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+LOGS_DIR="/Users/felixlunzenfichter/Documents/macos-voice-control/logs"
+
+if [ -d "$LOGS_DIR" ]; then
+    # Create legacy directory if it doesn't exist
+    mkdir -p "$LOGS_DIR/legacy"
+    
+    # Archive existing log files
+    for logfile in "$LOGS_DIR"/*.log "$LOGS_DIR"/*.txt "$LOGS_DIR"/*.json; do
+        if [ -f "$logfile" ]; then
+            filename=$(basename "$logfile")
+            # Move to legacy with timestamp
+            mv "$logfile" "$LOGS_DIR/legacy/${TIMESTAMP}_${filename}"
+        fi
+    done
+    
+    # Clear/recreate empty log files
+    touch "$LOGS_DIR/logs.txt"
+    touch "$LOGS_DIR/logs.json"
+    touch "$LOGS_DIR/git-client-logs.log"
+    
+    echo "Logs archived to $LOGS_DIR/legacy/"
+fi
+
+# Spawn worker to handle voice control deployment in split screen
+echo "Spawning macOS Voice Control deployment worker in split screen..."
+PANE_ID=$(tmux split-window -t claude_orchestrator:0 -h -P -F "#{pane_id}" "cd /Users/felixlunzenfichter/Documents/macos-voice-control && claude --model opus --dangerously-skip-permissions")
+tmux select-layout -t claude_orchestrator even-horizontal
+
+# Wait for Claude to initialize in the new pane
+sleep 2
+
+# Send deployment instructions to worker with pane ID for self-termination
+tmux send-keys -t "$PANE_ID" "Please read /Users/felixlunzenfichter/Documents/macos-voice-control/deployment.md and start the backend and mac-server following the deployment guide. Your pane ID is $PANE_ID. Terminate yourself with 'tmux kill-pane -t $PANE_ID' when complete."
+sleep 1
+tmux send-keys -t "$PANE_ID" Enter
