@@ -118,6 +118,6 @@ tmux select-layout -t claude_orchestrator even-horizontal
 sleep 2
 
 # Send deployment instructions to worker with pane ID for self-termination
-tmux send-keys -t "$PANE_ID" "Please read /Users/felixlunzenfichter/Documents/macos-voice-control/deployment.md and start the backend and mac-server following the deployment guide. Your pane ID is $PANE_ID. Terminate yourself with 'tmux kill-pane -t $PANE_ID' when complete."
+tmux send-keys -t "$PANE_ID" "Please read /Users/felixlunzenfichter/Documents/macos-voice-control/deployment.md and start the backend and mac-server following the deployment guide. Make sure that the iOS app is running and that transcriptions are being received. After receiving a successful transcription, terminate yourself with 'tmux kill-pane -t $PANE_ID'."
 sleep 1
 tmux send-keys -t "$PANE_ID" Enter

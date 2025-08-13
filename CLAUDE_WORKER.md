@@ -12,81 +12,20 @@ Since this is a fully accessible system, you MUST use tmux for ALL command execu
 - User cannot manually manage processes due to accessibility needs
 
 ### MCP tmux Function
-The MCP system provides a tmux function that handles tmux command execution. Here's the actual implementation:
+Access via: `mcp__system-tools__tmux(command)`
 
-```javascript
-case 'tmux': {
-  const { command, session_name: sessionName } = args;
-  
-  // Error if command contains tmux or -t (redundant with function purpose and session_name parameter)
-  if (command.startsWith('tmux')) {
-    throw new Error('Command should not start with "tmux". Just pass the tmux subcommand.');
-  }
-  if (command.includes('-t ')) {
-    throw new Error('Command should not contain -t flag. Use session_name parameter instead.');
-  }
-  
-  // Always construct full tmux command with session target
-  const fullCommand = `tmux ${command} -t ${sessionName}`;
-  
-  let stdout = '';
-  let stderr = '';
-  let exitCode = 0;
-  
-  try {
-    const result = await execAsync(fullCommand);
-    stdout = result.stdout || '';
-    stderr = result.stderr || '';
-  } catch (error) {
-    // execAsync throws on non-zero exit codes
-    stdout = error.stdout || '';
-    stderr = error.stderr || '';
-    exitCode = error.code;
-  }
-  
-  const formattedOutput = `STDOUT:${stdout || 'No stdout'}\nSTDERR:${stderr || 'No stderr'}`;
-  
-  return {
-    content: [
-      {
-        type: 'text',
-        text: formattedOutput
-      }
-    ]
-  };
-}
-```
+**Standard workflow:**
+1. Create: `mcp__system-tools__tmux("new-session -d -s my-session")`
+2. Send: `mcp__system-tools__tmux("send-keys -t my-session 'command' C-m")`
+3. Get: `mcp__system-tools__tmux("capture-pane -t my-session -p")`
+4. Kill: `mcp__system-tools__tmux("kill-session -t my-session")`
 
-**Important Notes:**
-- session_name is REQUIRED for all commands (no empty strings)
-- For global commands like list-sessions, use "default" as the session name
-- To create sessions in specific directories, use `-c /path/to/dir` with new-session
-- For existing sessions, use send-keys to change directories (tmux limitation)
-- **NEVER use -t flag in commands** - Will throw error since function handles session targeting automatically
+**Key points:**
+- YOU create, communicate with, and kill sessions yourself
+- Sessions persist until explicitly killed - always clean up
+- Use `-c /path` with new-session to set directory
+- Function just executes `tmux ${command}` directly
 
-## Voice Control System Management
-
-### Starting the Voice Control Servers
-```javascript
-// 1. Kill existing sessions (ignore errors if not running)
-system-tools__tmux("kill-session", "backend")
-system-tools__tmux("kill-session", "mac-server")
-
-// 2. Start Backend Server (with Google credentials)
-system-tools__tmux("new-session -d -c /Users/felixlunzenfichter/Documents/macos-voice-control/backend 'GOOGLE_APPLICATION_CREDENTIALS=/Users/felixlunzenfichter/.config/gcloud/legacy_credentials/id-speech-to-text-app@gen-lang-client-0047710702.iam.gserviceaccount.com/adc.json node server.js'", "backend")
-
-// 3. Start Mac Server (handles transcription & TTS)
-system-tools__tmux("new-session -d -c /Users/felixlunzenfichter/Documents/macos-voice-control/mac-server 'npm start'", "mac-server")
-
-// 4. Wait for startup then check status
-setTimeout(() => {
-  system-tools__tmux("capture-pane -p | tail -10", "backend")
-  // Should show: "Server running on port 8080"
-  
-  system-tools__tmux("capture-pane -p | tail -10", "mac-server")
-  // Should show: "Connected to transcription backend", "✅ TTS enabled with OpenAI"
-}, 3000);
-```
 
 ## iOS Development Rules
 **CRITICAL: NEVER OPEN XCODE DIRECTLY**

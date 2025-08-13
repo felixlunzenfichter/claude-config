@@ -31,14 +31,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             command: {
               type: 'string',
-              description: 'The tmux command to execute'
-            },
-            session_name: {
-              type: 'string',
-              description: 'Session name (required for all commands, even global ones like list-sessions)'
+              description: 'Complete tmux command string (everything after "tmux")'
             }
           },
-          required: ['command', 'session_name']
+          required: ['command']
         }
       }
     ]
@@ -50,18 +46,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   
   switch (name) {
     case 'tmux': {
-      const { command, session_name: sessionName } = args;
+      const { command } = args;
       
-      // Error if command contains tmux or -t (redundant with function purpose and session_name parameter)
-      if (command.startsWith('tmux')) {
-        throw new Error('Command should not start with "tmux". Just pass the tmux subcommand.');
-      }
-      if (command.includes('-t ')) {
-        throw new Error('Command should not contain -t flag. Use session_name parameter instead.');
-      }
-      
-      // Always construct full tmux command with session target
-      const fullCommand = `tmux ${command} -t ${sessionName}`;
+      // Construct complete tmux command
+      const fullCommand = `tmux ${command}`;
       
       let stdout = '';
       let stderr = '';
@@ -75,10 +63,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         // execAsync throws on non-zero exit codes
         stdout = error.stdout || '';
         stderr = error.stderr || '';
-        exitCode = error.code;
+        exitCode = error.code || 1;
       }
       
-      const formattedOutput = `STDOUT:${stdout || 'No stdout'}\nSTDERR:${stderr || 'No stderr'}`;
+      const formattedOutput = `STDOUT:${stdout || 'No stdout'}\nSTDERR:${stderr || 'No stderr'}\nEXIT_CODE:${exitCode}`;
       
       return {
         content: [
